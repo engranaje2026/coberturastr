@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor de Coberturas · Planilla Azul v6.0</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes girar { to { transform: rotate(360deg); } }
+
+        :root {
+            --bg:#0a0f1a;
+            --bg-grid: rgba(255,255,255,0.02);
+            --panel:#10182b;
+            --panel-alt:#0c1322;
+            --border:#1e2a45;
+            --border-soft:#161f36;
+            --text:#e8edf7;
+            --text-muted:#8291ab;
+            --text-dim:#576080;
+            --amber:#f5a623;
+            --amber-soft:rgba(245,166,35,.13);
+            --teal:#22d3c5;
+            --teal-soft:rgba(34,211,197,.13);
+            --red:#f0576b;
+            --red-soft:rgba(240,87,107,.13);
+            --blue:#5b8cff;
+            --blue-soft:rgba(91,140,255,.13);
+            --radius:10px;
+        }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'IBM Plex Sans',sans-serif; background: linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 34px, var(--bg); color:var(--text); padding:22px; min-height:100vh; }
+        .container { max-width:1440px; margin:0 auto; }
+
+        .masthead { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+        .brand { display:flex; align-items:center; gap:16px; }
+        .brand-icon { 
+            width:48px; 
+            height:48px; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            flex-shrink:0; 
+        }
+        .brand-icon svg {
+            width: 100%;
+            height: 100%;
+            animation: girar 26s linear infinite;
+            filter: drop-shadow(0 0 16px rgba(30,110,220,0.45)) drop-shadow(0 0 36px rgba(20,80,180,0.2));
+        }
+        .brand-text { display:flex; flex-direction:column; gap:2px; }
+        .brand-text .title { font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; letter-spacing:-0.01em; color:var(--text); line-height:1.2; }
+        .brand-text .title .highlight { color:var(--blue); }
+        .brand-text .subtitle { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; color:var(--text-muted); }
+        .brand-text .tagline { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+
+        .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .user-selector { display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--border); padding:6px 12px; border-radius:20px; }
+        .user-selector label { font-size:12px; font-weight:600; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; }
+        .user-selector select { background:transparent; border:none; color:var(--text); font-size:13px; font-weight:600; font-family:'IBM Plex Sans',sans-serif; outline:none; cursor:pointer; }
+        .user-selector select option { background:var(--panel-alt); color:var(--text); }
+
+        button { font-family:'IBM Plex Sans',sans-serif; }
+        .btn { padding:9px 16px; border:1px solid transparent; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:.15s; }
+        .btn-success { background:var(--teal-soft); color:var(--teal); border-color:rgba(34, 211, 197, .3); }
+        .btn-success:hover { background:var(--teal); color:#062622; }
+        .btn-danger { background:var(--red-soft); color:var(--red); border-color:rgba(240, 87, 107, .3); }
+        .btn-danger:hover { background:var(--red); color:#2a0a10; }
+        .btn-primary { background:var(--blue); color:#fff; border:none; }
+        .btn-primary:hover { background:#4675e6; }
+        .btn-secondary { background:var(--panel-alt); color:var(--text-muted); border:1px solid var(--border); }
+        .btn-secondary:hover { color:var(--text); border-color:var(--text-dim); }
+
+        .status-badge { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; padding:7px 14px; border-radius:20px; background:var(--panel); border:1px solid var(--border); color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+        .status-dot { width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); }
+
+        .instruments { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+        .instrument { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; position:relative; overflow:hidden; }
+        .instrument::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--accent,var(--blue)); }
+        .instrument .val { font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:600; color:var(--text); }
+        .instrument .lbl { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px; }
+
+        .panels { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; margin-bottom:16px; }
+        @media (max-width:1100px) { .panels { grid-template-columns:1fr; } }
+        
+        .card { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow:hidden; }
+        .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+        .card-head .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--text-dim); text-transform:uppercase; }
+        .card-head h3 { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; }
+        
+        .ladder { display:flex; flex-direction:column; }
+        .rung { display:flex; gap:12px; position:relative; }
+        .rail { width:20px; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+        .rail .node { width:11px; height:11px; border-radius:50%; background:var(--panel-alt); border:2px solid var(--text-dim); margin-top:4px; z-index:1; flex-shrink:0; }
+        .rung.has-vacante .rail .node { border-color:var(--red); background:var(--red-soft); }
+        .rail .line { width:2px; flex:1; background:var(--border); margin:2px 0; }
+        .rung:last-of-type .rail .line { display:none; }
+        .rung-body { flex:1; padding-bottom:14px; }
+        .rung-label { font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:7px; }
+        .slots { display:flex; gap:8px; flex-wrap:wrap; }
+        .slot { background:var(--panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:9px 12px; width:172px; }
+        .slot.vacante { border-color:rgba(240,87,107,.4); background:var(--red-soft); }
+        .slot.cubriendo { border-color:rgba(245,166,35,.4); background:var(--amber-soft); }
+        .slot.ausente { border-color:rgba(240,87,107,.4); background:var(--red-soft); opacity:.75; }
+        .slot-name { font-weight:600; font-size:13px; color:var(--text); }
+        .slot-meta { font-size:10.5px; color:var(--text-muted); margin-top:2px; font-family:'IBM Plex Mono',monospace; }
+        .slot-badge { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:8.5px; font-weight:600; padding:3px 7px; border-radius:4px; margin-top:6px; text-transform:uppercase; }
+        .badge-plaza { background:var(--panel); color:var(--text-muted); border:1px solid var(--border); }
+        .badge-cubriendo { background:var(--amber-soft); color:var(--amber); }
+        .badge-ausente { background:var(--red-soft); color:var(--red); }
+        .badge-temporal { background:var(--blue-soft); color:var(--blue); }
+        .badge-vacante { background:var(--red-soft); color:var(--red); }
+        .pool-row { margin-top:6px; padding-top:14px; border-top:1px dashed var(--border); }
+
+        .offers-panel { max-height:220px; overflow-y:auto; padding-right:2px; }
+        .offer-item { background:var(--panel-alt); border:1px solid var(--border-soft); border-left:3px solid var(--blue); padding:10px 12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+        .offer-item .info strong { display:block; font-size:13px; font-weight:600; }
+        .offer-item .info span { font-size:11px; color:var(--text-muted); }
+        .offer-item .actions button { margin-left:6px; padding:5px 10px; border:none; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer; }
+        .btn-accept { background:var(--teal); color:#062622; }
+        .btn-reject { background:transparent; color:var(--red); border:1px solid rgba(240,87,107,.4) !important; }
+
+        .incidencias-panel { max-height:220px; overflow-y:auto; }
+        .incidencia-card { background:var(--panel-alt); border:1px solid var(--border); border-left:3px solid var(--amber); border-radius:8px; padding:12px; margin-bottom:8px; }
+        .incidencia-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+        .incidencia-folio { font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--amber); }
+        .incidencia-cadena { font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:8px; }
+        .btn-revert { padding:4px 10px; font-size:11px; background:var(--red-soft); color:var(--red); border:1px solid rgba(240,87,107,.4); border-radius:6px; cursor:pointer; font-weight:600; }
+        .btn-revert:hover { background:var(--red); color:#fff; }
+
+        #logArea { background:var(--panel-alt); border:1px solid var(--border-soft); color:var(--text-muted); font-family:'IBM Plex Mono',monospace; font-size:12px; height:200px; overflow-y:auto; padding:14px; border-radius:8px; line-height:1.7; white-space:pre-wrap; }
+        #logArea .success { color:var(--teal); }
+        #logArea .warning { color:var(--amber); }
+        #logArea .error { color:var(--red); }
+        #logArea .highlight { color:var(--blue); }
+
+        .modal-overlay { position:fixed; inset:0; background:rgba(4,7,14,.7); display:none; justify-content:center; align-items:center; z-index:100; backdrop-filter:blur(2px); }
+        .modal-body { background:var(--panel); border:1px solid var(--border); padding:22px; border-radius:12px; width:340px; }
+        .modal-body h4 { font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:14px; }
+        .modal-body label { font-weight:600; font-size:12px; color:var(--text-muted); display:block; margin-top:12px; text-transform:uppercase; }
+        .modal-body select, .modal-body input { width:100%; padding:9px 10px; margin:6px 0 4px; border:1px solid var(--border); border-radius:6px; background:var(--panel-alt); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:13px; outline:none; }
+        .modal-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+        .footer { margin-top:16px; font-size:11.5px; color:var(--text-dim); text-align:center; font-family:'IBM Plex Mono',monospace; }
+    </style>
+</head>
+<body>
+
+<!-- SVG del Engrane -->
+<svg width="0" height="0" style="position:absolute">
+    <defs>
+        <linearGradient id="diente" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#5b9ede" />
+            <stop offset="45%" stop-color="#2c5aa0" />
+            <stop offset="100%" stop-color="#173d73" />
+        </linearGradient>
+        <linearGradient id="cuerpo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#4a8bce" />
+            <stop offset="50%" stop-color="#2c5aa0" />
+            <stop offset="100%" stop-color="#173d73" />
+        </linearGradient>
+        <g id="gearDetallado">
+            <circle cx="50" cy="50" r="31.5" fill="none" stroke="url(#cuerpo)" stroke-width="10" />
+            <g fill="url(#diente)">
+                <rect x="46" y="5" width="8" height="14" rx="2" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(30 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(60 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(90 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(120 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(150 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(180 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(210 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(240 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(270 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(300 50 50)" />
+                <rect x="46" y="5" width="8" height="14" rx="2" transform="rotate(330 50 50)" />
+            </g>
+            <circle cx="50" cy="50" r="24" fill="none" stroke="rgba(225,240,255,0.65)" stroke-width="1.3" />
+            <circle cx="50" cy="50" r="22.5" fill="none" stroke="rgba(10,25,55,0.5)" stroke-width="0.7" />
+        </g>
+    </defs>
+</svg>
+
+<div class="container">
+    <div class="masthead">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 100 100"><use href="#gearDetallado"/></svg>
+            </div>
+            <div class="brand-text">
+                <div class="title">Planilla <span class="highlight">Azul</span></div>
+                <div class="subtitle">Secretaría de Trabajo</div>
+                <div class="tagline">Motor de Coberturas · Sistema de Folios por Cadena</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="user-selector">
+                <label>SESIÓN</label>
+                <select id="selectorUsuario" onchange="cambiarUsuario()">
+                    <option value="Secretario">Secretario</option>
+                    <option value="Luis">Luis</option>
+                    <option value="Carlos">Carlos</option>
+                    <option value="Marta">Marta</option>
+                    <option value="Roberto">Roberto</option>
+                    <option value="Sofía">Sofía</option>
+                    <option value="Jorge">Jorge</option>
+                    <option value="Ana">Ana</option>
+                </select>
+            </div>
+            <button class="btn btn-success" id="btnNuevaIncidencia" onclick="abrirModalIncidencia()">Declarar incidencia</button>
+            <button class="btn btn-danger" onclick="motor.reiniciar()">Reiniciar</button>
+            <span class="status-badge" id="statusBadge"><span class="status-dot"></span>Listo</span>
+        </div>
+    </div>
+
+    <div class="instruments">
+        <div class="instrument" style="--accent:var(--red)"><div class="val" id="instVacantes">0</div><div class="lbl">Vacantes activas</div></div>
+        <div class="instrument" style="--accent:var(--blue)"><div class="val" id="instOfertas">0</div><div class="lbl">Mis Ofertas</div></div>
+        <div class="instrument" style="--accent:var(--amber)"><div class="val" id="instIncidencias">0</div><div class="lbl">Incidencias en curso</div></div>
+        <div class="instrument" style="--accent:var(--teal)"><div class="val" id="instTemporales">0</div><div class="lbl">Temporales libres</div></div>
+    </div>
+
+    <div class="panels">
+        <div class="card">
+            <div class="card-head">
+                <div class="title"><span class="eyebrow">Panel 01</span><h3>Organigrama · Nivel Efectivo</h3></div>
+            </div>
+            <div class="ladder" id="organigramaContainer"></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card">
+                <div class="card-head">
+                    <div class="title"><span class="eyebrow">Panel 02</span><h3>Mis Ofertas Pendientes</h3></div>
+                </div>
+                <div id="offersContainer" class="offers-panel">
+                    <p style="color:var(--text-dim); font-size:12px;">No hay ofertas para ti.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div class="title"><span class="eyebrow">Panel 03</span><h3>Incidencias Activas (Control)</h3></div>
+                </div>
+                <div id="incidenciasContainer" class="incidencias-panel">
+                    <p style="color:var(--text-dim); font-size:12px;">Sin incidencias registradas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div class="title"><span class="eyebrow">Auditoría</span><h3>Bitácora de Eventos</h3></div>
+        </div>
+        <div id="logArea">Sistema inicializado.</div>
+    </div>
+
+    <div class="footer">PLANILLA AZUL — SISTEMA DE COBERTURAS Y CADENAS ESCALAFONARIAS</div>
+</div>
+
+<!-- Modal para Declarar Incidencia -->
+<div class="modal-overlay" id="modalIncidencia">
+    <div class="modal-body">
+        <h4>Declarar incidencia</h4>
+        <label>Trabajador que se ausenta</label>
+        <select id="selectAusente"></select>
+        <label>Días de duración</label>
+        <input type="number" id="inputDias" value="3" min="1" max="365">
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="cerrarModalIncidencia()">Cancelar</button>
+            <button class="btn btn-primary" onclick="confirmarIncidencia()">Ejecutar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    class Trabajador {
+        constructor(nombre, nivelBase, rama, antiguedadTotal, cursosAprobados = []) {
+            this.nombre = nombre;
+            this.nivelBase = nivelBase;
+            this.rama = rama;
+            this.antiguedadTotal = antiguedadTotal;
+            this.cursosAprobados = new Set(cursosAprobados);
+            this.coberturaActiva = null;
+            this.ultimaCobertura = null;
+            this.ausente = false;
+            this.diasAusencia = 0;
+        }
+        tieneCurso(nivel) { return this.cursosAprobados.has(nivel); }
+        get nivelEfectivo() { return this.coberturaActiva ? this.coberturaActiva.nivel : this.nivelBase; }
+        get estaEnComision() { return this.coberturaActiva !== null; }
+        get cubreA() { return this.coberturaActiva ? this.coberturaActiva.titularAusente : null; }
+    }
+
+    class Temporal {
+        constructor(nombre, antiguedadBolsa, diasAcumulados = 0) {
+            this.nombre = nombre;
+            this.antiguedadBolsa = antiguedadBolsa;
+            this.diasAcumulados = diasAcumulados;
+            this.asignadoFolio = null;
+            this.ultimaAsignacion = null;
+        }
+    }
+
+    class Incidencia {
+        constructor(folio, titularOriginal, nivelOriginal, duracionDias) {
+            this.folio = folio;
+            this.titularOriginal = titularOriginal;
+            this.nivelOriginal = nivelOriginal;
+            this.duracionDias = duracionDias;
+            this.cadena = [];
+            this.activa = true;
+        }
+    }
+
+    class MotorAsignacion {
+        constructor() {
+            this.trabajadores = [];
+            this.temporales = [];
+            this.bitacora = [];
+            this.ofertas = [];
+            this.incidencias = [];
+            this.contadorFolio = 100;
+            this.usuarioActual = 'Secretario';
+        }
+
+        cargarDatosDemo() {
+            this.trabajadores = [
+                new Trabajador("Ana", 5, "Comercial", 12, [6]),
+                new Trabajador("Luis", 4, "Comercial", 10, [5]),
+                new Trabajador("Carlos", 3, "Comercial", 8, [4]),
+                new Trabajador("Marta", 3, "Comercial", 6, []),
+                new Trabajador("Roberto", 2, "Comercial", 5, [3]),
+                new Trabajador("Sofía", 2, "Comercial", 4, [3]),
+                new Trabajador("Jorge", 1, "Tronco Común", 3, [2])
+            ];
+
+            this.temporales = [
+                new Temporal("Julián", 10, 8),
+                new Temporal("Pepe", 8, 10),
+                new Temporal("Luis T.", 5, 5),
+                new Temporal("María", 2, 2)
+            ];
+
+            this.bitacora = [];
+            this.ofertas = [];
+            this.incidencias = [];
+            this.contadorFolio = 100;
+            this.log('Sistema inicializado. Cola de Bolsa por antigüedad activa.', 'highlight');
+            this.renderizarUI();
+        }
+
+        log(msg, tipo = 'info') {
+            const tiempo = new Date().toLocaleTimeString('es-MX', { hour12: false });
+            this.bitacora.push({ texto: `[${tiempo}] ${msg}`, tipo });
+            this.renderizarUI();
+        }
+
+        renderizarUI() {
+            const container = document.getElementById('organigramaContainer');
+            if (container) {
+                const ocupacion = {};
+                for (const t of this.trabajadores) {
+                    (ocupacion[t.nivelEfectivo] = ocupacion[t.nivelEfectivo] || []).push(t);
+                }
+                let html = '';
+                for (let n = 5; n >= 1; n--) {
+                    const ocupantes = ocupacion[n] || [];
+                    html += `<div class="rung ${ocupantes.length === 0 ? 'has-vacante' : ''}">
+                        <div class="rail"><div class="node"></div><div class="line"></div></div>
+                        <div class="rung-body">
+                            <div class="rung-label">Nivel ${n}${n === 1 ? ' · Tronco Común' : ''}</div>
+                            <div class="slots">`;
+                    if (ocupantes.length === 0) {
+                        html += `<div class="slot vacante">
+                            <div class="slot-name">Vacante N${n}</div>
+                            <div class="slot-meta">Sin ocupante</div>
+                            <span class="slot-badge badge-vacante">Vacante</span>
+                        </div>`;
+                    } else {
+                        ocupantes.forEach(t => {
+                            let cls = 'slot', badge = '<span class="slot-badge badge-plaza">Plaza fija</span>', extra = '';
+                            if (t.ausente && !t.estaEnComision) {
+                                cls += ' ausente';
+                                badge = `<span class="slot-badge badge-ausente">Ausente ${t.diasAusencia}d</span>`;
+                                extra = ' (ausente)';
+                            } else if (t.estaEnComision) {
+                                cls += ' cubriendo';
+                                const titular = t.cubreA || `Nivel ${t.coberturaActiva.nivel}`;
+                                badge = `<span class="slot-badge badge-cubriendo">Cubre a ${titular}</span>`;
+                                extra = ` ← cubre a ${titular}`;
+                            }
+                            html += `<div class="${cls}">
+                                <div class="slot-name">${t.nombre}${extra}</div>
+                                <div class="slot-meta">Antig: ${t.antiguedadTotal}a</div>
+                                ${badge}
+                            </div>`;
+                        });
+                    }
+                    html += `</div></div></div>`;
+                }
+                html += `<div class="rung pool-row">
+                    <div class="rail"></div>
+                    <div class="rung-body">
+                        <div class="rung-label">Bolsa de trabajo (Cola Rotativa por Antigüedad)</div>
+                        <div class="slots">`;
+                this.temporales.forEach(temp => {
+                    const badge = temp.asignadoFolio ? `<span class="slot-badge badge-cubriendo">Folio #${temp.asignadoFolio}</span>` : `<span class="slot-badge badge-temporal">Disponible</span>`;
+                    html += `<div class="slot">
+                        <div class="slot-name">${temp.nombre}</div>
+                        <div class="slot-meta">Antig: ${temp.antiguedadBolsa}a · ${temp.diasAcumulados}d acum.</div>
+                        ${badge}
+                    </div>`;
+                });
+                html += `</div></div></div>`;
+                container.innerHTML = html;
+            }
+
+            const offersContainer = document.getElementById('offersContainer');
+            if (offersContainer) {
+                const misOfertas = this.ofertas.filter(o => o.trabajador === this.usuarioActual && o.estado === 'pendiente');
+                if (misOfertas.length === 0) {
+                    offersContainer.innerHTML = `<p style="color:var(--text-dim); font-size:12px;">No hay ofertas pendientes para ${this.usuarioActual}.</p>`;
+                } else {
+                    offersContainer.innerHTML = misOfertas.map(o => `
+                        <div class="offer-item">
+                            <div class="info">
+                                <strong>${o.trabajador}</strong>
+                                <span>Cubrir a <strong>${o.titularAusente}</strong> (N${o.nivel}) · Folio #${o.folio}</span>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-accept" onclick="motor.aceptarOferta(${o.id})">Aceptar</button>
+                                <button class="btn-reject" onclick="motor.rechazarOferta(${o.id})">Rechazar</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            const incContainer = document.getElementById('incidenciasContainer');
+            if (incContainer) {
+                const activas = this.incidencias.filter(i => i.activa);
+                if (activas.length === 0) {
+                    incContainer.innerHTML = `<p style="color:var(--text-dim); font-size:12px;">Sin incidencias registradas.</p>`;
+                } else {
+                    incContainer.innerHTML = activas.map(inc => {
+                        const cadenaTxt = inc.cadena.length > 0 
+                            ? inc.cadena.map(c => `${c.sustituto} (N${c.nivelAceptado})`).join(' → ') 
+                            : 'En proceso de búsqueda...';
+                        return `
+                            <div class="incidencia-card">
+                                <div class="incidencia-head">
+                                    <span class="incidencia-folio">Folio #${inc.folio} — ${inc.titularOriginal} (N${inc.nivelOriginal})</span>
+                                    ${this.usuarioActual === 'Secretario' ? `<button class="btn-revert" onclick="motor.revertirIncidencia(${inc.folio})">↩ Concluir / Regresar</button>` : ''}
+                                </div>
+                                <div class="incidencia-cadena">Cadena: <strong>${cadenaTxt}</strong></div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            document.getElementById('instVacantes').textContent = [1,2,3,4,5].filter(n => !this.trabajadores.some(t => t.nivelEfectivo === n)).length;
+            document.getElementById('instOfertas').textContent = this.ofertas.filter(o => o.trabajador === this.usuarioActual && o.estado === 'pendiente').length;
+            document.getElementById('instIncidencias').textContent = this.incidencias.filter(i => i.activa).length;
+            document.getElementById('instTemporales').textContent = this.temporales.filter(t => !t.asignadoFolio).length;
+
+            const area = document.getElementById('logArea');
+            if (area) {
+                area.innerHTML = this.bitacora.map(e => `<div class="${e.tipo || 'info'}">${e.texto}</div>`).join('');
+                area.scrollTop = area.scrollHeight;
+            }
+
+            document.getElementById('btnNuevaIncidencia').style.display = this.usuarioActual === 'Secretario' ? 'inline-block' : 'none';
+            document.getElementById('statusBadge').innerHTML = `<span class="status-dot"></span>${this.usuarioActual}`;
+            this.cargarSelectTrabajadores();
+        }
+
+        cargarSelectTrabajadores() {
+            const select = document.getElementById('selectAusente');
+            if (!select) return;
+            select.innerHTML = '';
+            for (const t of this.trabajadores) {
+                if (!t.ausente && !t.estaEnComision) {
+                    const opt = document.createElement('option');
+                    opt.value = t.nombre;
+                    opt.textContent = `${t.nombre} (N${t.nivelBase})`;
+                    select.appendChild(opt);
+                }
+            }
+        }
+
+        setUsuario(u) { this.usuarioActual = u; this.renderizarUI(); }
+
+        declararIncidencia(nombreTrabajador, duracionDias) {
+            const t = this.trabajadores.find(x => x.nombre === nombreTrabajador);
+            if (!t) return;
+
+            const folio = ++this.contadorFolio;
+            t.ausente = true;
+            t.diasAusencia = duracionDias;
+
+            const inc = new Incidencia(folio, t.nombre, t.nivelBase, duracionDias);
+            this.incidencias.push(inc);
+
+            this.log(`Incidencia Folio #${folio}: ${t.nombre} (N${t.nivelBase}) por ${duracionDias} días.`, 'highlight');
+            this.propagarOferta(t.nivelBase, folio, t.nombre, duracionDias);
+        }
+
+        propagarOferta(nivelVacante, folio, titularAusente, duracionDias) {
+            if (nivelVacante === 1) {
+                this.asignarTemporalBolsa(folio, duracionDias);
+                return;
+            }
+
+            const candidatos = this.trabajadores.filter(t => 
+                t.nivelBase === (nivelVacante - 1) &&
+                !t.estaEnComision &&
+                !t.ausente &&
+                t.tieneCurso(nivelVacante)
+            ).sort((a,b) => {
+                const fA = a.ultimaCobertura?.getTime() || 0;
+                const fB = b.ultimaCobertura?.getTime() || 0;
+                if (fA !== fB) return fA - fB;
+                return b.antiguedadTotal - a.antiguedadTotal;
+            });
+
+            if (candidatos.length === 0) {
+                this.log(`Folio #${folio}: Sin candidatos capacitados en N${nivelVacante - 1}. Bajando a N${nivelVacante - 2}...`, 'warning');
+                this.propagarOferta(nivelVacante - 1, folio, titularAusente, duracionDias);
+                return;
+            }
+
+            const candidato = candidatos[0];
+            const oferta = {
+                id: Date.now() + Math.random(),
+                folio,
+                trabajador: candidato.nombre,
+                nivel: nivelVacante,
+                titularAusente,
+                duracionDias,
+                estado: 'pendiente'
+            };
+            this.ofertas.push(oferta);
+            this.log(`Oferta enviada a ${candidato.nombre} para cubrir N${nivelVacante} (Folio #${folio}).`, 'highlight');
+            this.renderizarUI();
+        }
+
+        aceptarOferta(id) {
+            const oferta = this.ofertas.find(o => o.id === id);
+            if (!oferta) return;
+
+            oferta.estado = 'aceptada';
+            const t = this.trabajadores.find(x => x.nombre === oferta.trabajador);
+            const inc = this.incidencias.find(i => i.folio === oferta.folio);
+
+            t.coberturaActiva = {
+                nivel: oferta.nivel,
+                folio: oferta.folio,
+                titularAusente: oferta.titularAusente,
+                duracionDias: oferta.duracionDias
+            };
+            t.ultimaCobertura = new Date();
+
+            inc.cadena.push({ sustituto: t.nombre, nivelAceptado: oferta.nivel, origen: t.nivelBase });
+
+            this.log(`${t.nombre} aceptó cubrir a ${oferta.titularAusente} en N${oferta.nivel} (Folio #${oferta.folio}).`, 'success');
+
+            this.propagarOferta(t.nivelBase, oferta.folio, t.nombre, oferta.duracionDias);
+        }
+
+        rechazarOferta(id) {
+            const oferta = this.ofertas.find(o => o.id === id);
+            if (!oferta) return;
+
+            oferta.estado = 'rechazada';
+            this.log(`${oferta.trabajador} rechazó oferta del Folio #${oferta.folio}.`, 'warning');
+
+            this.propagarOferta(oferta.nivel, oferta.folio, oferta.titularAusente, oferta.duracionDias);
+        }
+
+        asignarTemporalBolsa(folio, duracionDias) {
+            const disponibles = this.temporales.filter(t => !t.asignadoFolio).sort((a,b) => {
+                const fA = a.ultimaAsignacion?.getTime() || 0;
+                const fB = b.ultimaAsignacion?.getTime() || 0;
+                if (fA !== fB) return fA - fB;
+                return b.antiguedadBolsa - a.antiguedadBolsa;
+            });
+
+            if (disponibles.length === 0) {
+                this.log(`Folio #${folio}: Sin temporales en Bolsa de Trabajo. Vacante desierta en la base.`, 'error');
+                return;
+            }
+
+            const elegido = disponibles[0];
+            elegido.asignadoFolio = folio;
+            elegido.diasAcumulados += duracionDias;
+            elegido.ultimaAsignacion = new Date();
+
+            const inc = this.incidencias.find(i => i.folio === folio);
+            if (inc) inc.cadena.push({ sustituto: elegido.nombre, nivelAceptado: 1, origen: 0, esTemporal: true });
+
+            this.log(`Bolsa de Trabajo: ${elegido.nombre} asignado a la base del Folio #${folio} (${duracionDias}d).`, 'success');
+            this.renderizarUI();
+        }
+
+        revertirIncidencia(folio) {
+            const inc = this.incidencias.find(i => i.folio === folio);
+            if (!inc || !inc.activa) return;
+
+            this.log(`🔄 REVERSIÓN EN CASCADA INVERSA: Concluyendo Folio #${folio}...`, 'warning');
+
+            for (let i = inc.cadena.length - 1; i >= 0; i--) {
+                const eslabon = inc.cadena[i];
+
+                if (eslabon.esTemporal) {
+                    const temp = this.temporales.find(t => t.nombre === eslabon.sustituto);
+                    if (temp) {
+                        temp.asignadoFolio = null;
+                        this.log(`  ➡️ Temporal ${temp.nombre} liberado y devuelto a la Bolsa de Trabajo.`, 'warning');
+                    }
+                } else {
+                    const trab = this.trabajadores.find(t => t.nombre === eslabon.sustituto);
+                    if (trab) {
+                        trab.coberturaActiva = null;
+                        this.log(`  ➡️ ${trab.nombre} regresa a su plaza fija Nivel ${trab.nivelBase}.`, 'warning');
+                    }
+                }
+            }
+
+            const titular = this.trabajadores.find(t => t.nombre === inc.titularOriginal);
+            if (titular) {
+                titular.ausente = false;
+                titular.diasAusencia = 0;
+                this.log(`✅ Titular ${titular.nombre} reintegrado a Nivel ${titular.nivelBase}. Folio #${folio} cerrado.`, 'success');
+            }
+
+            inc.activa = false;
+            this.renderizarUI();
+        }
+
+        reiniciar() {
+            this.cargarDatosDemo();
+        }
+    }
+
+    const motor = new MotorAsignacion();
+    motor.cargarDatosDemo();
+
+    function cambiarUsuario() {
+        motor.setUsuario(document.getElementById('selectorUsuario').value);
+    }
+    function abrirModalIncidencia() {
+        document.getElementById('modalIncidencia').style.display = 'flex';
+        motor.cargarSelectTrabajadores();
+    }
+    function cerrarModalIncidencia() {
+        document.getElementById('modalIncidencia').style.display = 'none';
+    }
+    function confirmarIncidencia() {
+        const nombre = document.getElementById('selectAusente').value;
+        const dias = parseInt(document.getElementById('inputDias').value) || 3;
+        if (!nombre) return;
+        cerrarModalIncidencia();
+        motor.declararIncidencia(nombre, dias);
+    }
+
+    window.motor = motor;
+    window.cambiarUsuario = cambiarUsuario;
+    window.abrirModalIncidencia = abrirModalIncidencia;
+    window.cerrarModalIncidencia = cerrarModalIncidencia;
+    window.confirmarIncidencia = confirmarIncidencia;
+</script>
+
+</body>
+</html>
