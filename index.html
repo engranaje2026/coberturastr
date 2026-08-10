@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor de Coberturas · Planilla Azul v6.0</title>
+    <title>Motor de Coberturas · Planilla Azul v6.1</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -36,20 +36,8 @@
 
         .masthead { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
         .brand { display:flex; align-items:center; gap:16px; }
-        .brand-icon { 
-            width:48px; 
-            height:48px; 
-            display:flex; 
-            align-items:center; 
-            justify-content:center; 
-            flex-shrink:0; 
-        }
-        .brand-icon svg {
-            width: 100%;
-            height: 100%;
-            animation: girar 26s linear infinite;
-            filter: drop-shadow(0 0 16px rgba(30,110,220,0.45)) drop-shadow(0 0 36px rgba(20,80,180,0.2));
-        }
+        .brand-icon { width:48px; height:48px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .brand-icon svg { width:100%; height:100%; animation: girar 26s linear infinite; filter: drop-shadow(0 0 16px rgba(30,110,220,0.45)) drop-shadow(0 0 36px rgba(20,80,180,0.2)); }
         .brand-text { display:flex; flex-direction:column; gap:2px; }
         .brand-text .title { font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; letter-spacing:-0.01em; color:var(--text); line-height:1.2; }
         .brand-text .title .highlight { color:var(--blue); }
@@ -84,12 +72,13 @@
 
         .panels { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; margin-bottom:16px; }
         @media (max-width:1100px) { .panels { grid-template-columns:1fr; } }
-        
+
         .card { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow:hidden; }
         .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
         .card-head .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--text-dim); text-transform:uppercase; }
         .card-head h3 { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; }
-        
+        .card-head .meta { font-size:11px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; }
+
         .ladder { display:flex; flex-direction:column; }
         .rung { display:flex; gap:12px; position:relative; }
         .rail { width:20px; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
@@ -114,17 +103,19 @@
         .badge-vacante { background:var(--red-soft); color:var(--red); }
         .pool-row { margin-top:6px; padding-top:14px; border-top:1px dashed var(--border); }
 
-        .offers-panel { max-height:220px; overflow-y:auto; padding-right:2px; }
-        .offer-item { background:var(--panel-alt); border:1px solid var(--border-soft); border-left:3px solid var(--blue); padding:10px 12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+        .offers-panel { max-height:250px; overflow-y:auto; padding-right:2px; }
+        .offer-item { background:var(--panel-alt); border:1px solid var(--border-soft); border-left:3px solid var(--blue); padding:10px 12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+        .offer-item.expired { border-left-color:var(--text-dim); opacity:.55; }
         .offer-item .info strong { display:block; font-size:13px; font-weight:600; }
         .offer-item .info span { font-size:11px; color:var(--text-muted); }
+        .offer-item .timer { font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:var(--amber); min-width:44px; text-align:center; padding:3px 7px; background:var(--amber-soft); border-radius:6px; }
         .offer-item .actions button { margin-left:6px; padding:5px 10px; border:none; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer; }
         .btn-accept { background:var(--teal); color:#062622; }
         .btn-reject { background:transparent; color:var(--red); border:1px solid rgba(240,87,107,.4) !important; }
 
         .incidencias-panel { max-height:220px; overflow-y:auto; }
         .incidencia-card { background:var(--panel-alt); border:1px solid var(--border); border-left:3px solid var(--amber); border-radius:8px; padding:12px; margin-bottom:8px; }
-        .incidencia-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+        .incidencia-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px; }
         .incidencia-folio { font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--amber); }
         .incidencia-cadena { font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:8px; }
         .btn-revert { padding:4px 10px; font-size:11px; background:var(--red-soft); color:var(--red); border:1px solid rgba(240,87,107,.4); border-radius:6px; cursor:pointer; font-weight:600; }
@@ -148,7 +139,6 @@
 </head>
 <body>
 
-<!-- SVG del Engrane -->
 <svg width="0" height="0" style="position:absolute">
     <defs>
         <linearGradient id="diente" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -235,6 +225,7 @@
             <div class="card">
                 <div class="card-head">
                     <div class="title"><span class="eyebrow">Panel 02</span><h3>Mis Ofertas Pendientes</h3></div>
+                    <span class="meta">Límite: 10:00</span>
                 </div>
                 <div id="offersContainer" class="offers-panel">
                     <p style="color:var(--text-dim); font-size:12px;">No hay ofertas para ti.</p>
@@ -262,7 +253,6 @@
     <div class="footer">PLANILLA AZUL — SISTEMA DE COBERTURAS Y CADENAS ESCALAFONARIAS</div>
 </div>
 
-<!-- Modal para Declarar Incidencia -->
 <div class="modal-overlay" id="modalIncidencia">
     <div class="modal-body">
         <h4>Declarar incidencia</h4>
@@ -326,6 +316,8 @@
             this.incidencias = [];
             this.contadorFolio = 100;
             this.usuarioActual = 'Secretario';
+            this.timerInterval = null;
+            this.TIEMPO_LIMITE_MS = 10 * 60 * 1000; // 10 minutos por oferta
         }
 
         cargarDatosDemo() {
@@ -350,8 +342,25 @@
             this.ofertas = [];
             this.incidencias = [];
             this.contadorFolio = 100;
+
+            if (this.timerInterval) clearInterval(this.timerInterval);
+            this.timerInterval = setInterval(() => this.tick(), 1000);
+
             this.log('Sistema inicializado. Cola de Bolsa por antigüedad activa.', 'highlight');
             this.renderizarUI();
+        }
+
+        // Revisa cada segundo si alguna oferta pendiente venció su límite de 10 min
+        tick() {
+            const ahora = Date.now();
+            let huboVencimiento = false;
+            for (const oferta of this.ofertas) {
+                if (oferta.estado === 'pendiente' && (ahora - oferta.timer) >= this.TIEMPO_LIMITE_MS) {
+                    huboVencimiento = true;
+                    this.rechazarOferta(oferta.id, true);
+                }
+            }
+            if (!huboVencimiento) this.renderizarUI();
         }
 
         log(msg, tipo = 'info') {
@@ -426,18 +435,24 @@
                 if (misOfertas.length === 0) {
                     offersContainer.innerHTML = `<p style="color:var(--text-dim); font-size:12px;">No hay ofertas pendientes para ${this.usuarioActual}.</p>`;
                 } else {
-                    offersContainer.innerHTML = misOfertas.map(o => `
+                    offersContainer.innerHTML = misOfertas.map(o => {
+                        const restanteSeg = Math.max(0, (o.timer + this.TIEMPO_LIMITE_MS - Date.now()) / 1000);
+                        const min = Math.floor(restanteSeg / 60);
+                        const seg = Math.floor(restanteSeg % 60);
+                        const timerStr = `${min}:${seg.toString().padStart(2, '0')}`;
+                        return `
                         <div class="offer-item">
                             <div class="info">
                                 <strong>${o.trabajador}</strong>
                                 <span>Cubrir a <strong>${o.titularAusente}</strong> (N${o.nivel}) · Folio #${o.folio}</span>
                             </div>
+                            <div class="timer">${timerStr}</div>
                             <div class="actions">
                                 <button class="btn-accept" onclick="motor.aceptarOferta(${o.id})">Aceptar</button>
                                 <button class="btn-reject" onclick="motor.rechazarOferta(${o.id})">Rechazar</button>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
                 }
             }
 
@@ -448,8 +463,8 @@
                     incContainer.innerHTML = `<p style="color:var(--text-dim); font-size:12px;">Sin incidencias registradas.</p>`;
                 } else {
                     incContainer.innerHTML = activas.map(inc => {
-                        const cadenaTxt = inc.cadena.length > 0 
-                            ? inc.cadena.map(c => `${c.sustituto} (N${c.nivelAceptado})`).join(' → ') 
+                        const cadenaTxt = inc.cadena.length > 0
+                            ? inc.cadena.map(c => `${c.sustituto} (N${c.nivelAceptado})`).join(' → ')
                             : 'En proceso de búsqueda...';
                         return `
                             <div class="incidencia-card">
@@ -517,11 +532,13 @@
                 return;
             }
 
-            const candidatos = this.trabajadores.filter(t => 
+            // Excluye a quien ya rechazó O a quien ya expiró en este mismo folio (evita reofertas en loop)
+            const candidatos = this.trabajadores.filter(t =>
                 t.nivelBase === (nivelVacante - 1) &&
                 !t.estaEnComision &&
                 !t.ausente &&
-                t.tieneCurso(nivelVacante)
+                t.tieneCurso(nivelVacante) &&
+                !this.ofertas.some(o => o.folio === folio && o.trabajador === t.nombre && (o.estado === 'rechazada' || o.estado === 'expirada'))
             ).sort((a,b) => {
                 const fA = a.ultimaCobertura?.getTime() || 0;
                 const fB = b.ultimaCobertura?.getTime() || 0;
@@ -530,7 +547,7 @@
             });
 
             if (candidatos.length === 0) {
-                this.log(`Folio #${folio}: Sin candidatos capacitados en N${nivelVacante - 1}. Bajando a N${nivelVacante - 2}...`, 'warning');
+                this.log(`Folio #${folio}: Sin candidatos disponibles en N${nivelVacante - 1}. Bajando a N${nivelVacante - 2}...`, 'warning');
                 this.propagarOferta(nivelVacante - 1, folio, titularAusente, duracionDias);
                 return;
             }
@@ -543,7 +560,8 @@
                 nivel: nivelVacante,
                 titularAusente,
                 duracionDias,
-                estado: 'pendiente'
+                estado: 'pendiente',
+                timer: Date.now()
             };
             this.ofertas.push(oferta);
             this.log(`Oferta enviada a ${candidato.nombre} para cubrir N${nivelVacante} (Folio #${folio}).`, 'highlight');
@@ -552,7 +570,8 @@
 
         aceptarOferta(id) {
             const oferta = this.ofertas.find(o => o.id === id);
-            if (!oferta) return;
+            if (!oferta || oferta.estado !== 'pendiente') { alert('Esta oferta ya no está disponible.'); return; }
+            if (oferta.trabajador !== this.usuarioActual) { alert('No puedes aceptar una oferta que no es tuya.'); return; }
 
             oferta.estado = 'aceptada';
             const t = this.trabajadores.find(x => x.nombre === oferta.trabajador);
@@ -566,19 +585,29 @@
             };
             t.ultimaCobertura = new Date();
 
-            inc.cadena.push({ sustituto: t.nombre, nivelAceptado: oferta.nivel, origen: t.nivelBase });
+            if (inc) inc.cadena.push({ sustituto: t.nombre, nivelAceptado: oferta.nivel, origen: t.nivelBase });
 
             this.log(`${t.nombre} aceptó cubrir a ${oferta.titularAusente} en N${oferta.nivel} (Folio #${oferta.folio}).`, 'success');
 
             this.propagarOferta(t.nivelBase, oferta.folio, t.nombre, oferta.duracionDias);
         }
 
-        rechazarOferta(id) {
+        // expirada=true: el sistema la vence sola (tick) y no exige que sea el usuario en sesión
+        rechazarOferta(id, expirada = false) {
             const oferta = this.ofertas.find(o => o.id === id);
-            if (!oferta) return;
+            if (!oferta || (oferta.estado !== 'pendiente' && !expirada)) {
+                if (!expirada) alert('Esta oferta ya no está disponible.');
+                return;
+            }
+            if (!expirada && oferta.trabajador !== this.usuarioActual) { alert('No puedes rechazar una oferta que no es tuya.'); return; }
 
-            oferta.estado = 'rechazada';
-            this.log(`${oferta.trabajador} rechazó oferta del Folio #${oferta.folio}.`, 'warning');
+            oferta.estado = expirada ? 'expirada' : 'rechazada';
+            this.log(
+                expirada
+                    ? `⏰ ${oferta.trabajador} no respondió a tiempo (venció) su oferta para N${oferta.nivel} (Folio #${oferta.folio}).`
+                    : `❌ ${oferta.trabajador} RECHAZÓ oferta para cubrir N${oferta.nivel} (Folio #${oferta.folio}).`,
+                expirada ? 'warning' : 'error'
+            );
 
             this.propagarOferta(oferta.nivel, oferta.folio, oferta.titularAusente, oferta.duracionDias);
         }
@@ -613,6 +642,14 @@
             if (!inc || !inc.activa) return;
 
             this.log(`🔄 REVERSIÓN EN CASCADA INVERSA: Concluyendo Folio #${folio}...`, 'warning');
+
+            // Cancela cualquier oferta pendiente que siga en curso para este folio,
+            // para que no pueda aceptarse después de que la incidencia ya se dio por cerrada.
+            const canceladas = this.ofertas.filter(o => o.folio === folio && o.estado === 'pendiente');
+            canceladas.forEach(o => { o.estado = 'cancelada'; });
+            if (canceladas.length > 0) {
+                this.log(`  ➡️ ${canceladas.length} oferta(s) pendiente(s) del Folio #${folio} canceladas.`, 'warning');
+            }
 
             for (let i = inc.cadena.length - 1; i >= 0; i--) {
                 const eslabon = inc.cadena[i];
@@ -655,6 +692,7 @@
         motor.setUsuario(document.getElementById('selectorUsuario').value);
     }
     function abrirModalIncidencia() {
+        if (motor.usuarioActual !== 'Secretario') { alert('Solo el Secretario puede declarar incidencias.'); return; }
         document.getElementById('modalIncidencia').style.display = 'flex';
         motor.cargarSelectTrabajadores();
     }
@@ -674,6 +712,9 @@
     window.abrirModalIncidencia = abrirModalIncidencia;
     window.cerrarModalIncidencia = cerrarModalIncidencia;
     window.confirmarIncidencia = confirmarIncidencia;
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalIncidencia(); });
+    document.getElementById('modalIncidencia').addEventListener('click', (e) => { if (e.target === e.currentTarget) cerrarModalIncidencia(); });
 </script>
 
 </body>
